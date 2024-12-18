@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    @default("user")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  orders    Order[]
+  reviews   Review[]
+  cart      Cart?
+}
+
+model Artwork {
+  id          String    @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  images      String[]
+  category    String
+  tags        String[]
+  dimensions  String
+  inStock     Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  reviews     Review[]
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String
+  userId    String
+  artworkId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  artwork   Artwork  @relation(fields: [artworkId], references: [id])
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  userId    String
+  status    String
+  total     Float
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  artworkId String
+  quantity  Int
+  price     Float
+  order     Order    @relation(fields: [orderId], references: [id])
+  artwork   Artwork  @relation(fields: [artworkId], references: [id])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  artworkId String
+  quantity  Int
+  cart      Cart     @relation(fields: [cartId], references: [id])
+  artwork   Artwork  @relation(fields: [artworkId], references: [id])
+}
